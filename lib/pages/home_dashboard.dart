@@ -24,7 +24,7 @@ class HomeDashboard extends StatefulWidget {
 
 class _HomeDashboardState extends State<HomeDashboard> {
   int _currentIndex = 0;
-  String userName = "Alex"; // Make this mutable
+  String userName = ""; // Make this mutable
   int simulatedScore = 720;
   List<String> completedLessons = [];
   int totalLessons = 5;
@@ -87,7 +87,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
       });
     } else {
       final defaultUser = UserData(
-        name: userName,
+        name: "",
         simulatedScore: 720,
         xpPoints: 0,
         completedLessons: [],
@@ -96,6 +96,9 @@ class _HomeDashboardState extends State<HomeDashboard> {
         preferredCurrency: 'USD',
       );
       userBox.add(defaultUser);
+      setState(() {
+        userName = "";
+      });
     }
   }
 
@@ -207,7 +210,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Hey, $userName! 👋', // This will now update automatically
+              userName.isEmpty ? 'Hey there! 👋' : 'Hey, $userName! 👋',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -219,8 +222,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
               'Ready to improve your credit?',
               style: TextStyle(
                 fontSize: 16,
-                color:
-                Theme.of(context).colorScheme.onBackground.withOpacity(0.7),
+                color: Theme.of(context).colorScheme.onBackground.withOpacity(0.7),
               ),
             ),
           ],
@@ -235,11 +237,10 @@ class _HomeDashboardState extends State<HomeDashboard> {
                   isDarkMode: widget.isDarkMode,
                   onCurrencyChanged: _onCurrencyChanged,
                   selectedCurrency: _selectedCurrency,
-                  onNameChanged: _onNameChanged, // Pass the callback here too
+                  onNameChanged: _onNameChanged,
                 ),
               ),
             ).then((_) {
-              // Refresh data when returning from profile page
               _refreshData();
             });
           },
@@ -247,7 +248,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
             radius: 24,
             backgroundColor: Theme.of(context).colorScheme.primary,
             child: Text(
-              userName.substring(0, 1), // This will also update
+              userName.isEmpty ? "?" : userName.substring(0, 1), // Fix: Check if name is empty
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -275,30 +276,30 @@ class _HomeDashboardState extends State<HomeDashboard> {
           end: Alignment.bottomRight,
           colors: isDark
               ? [
-            Colors.blueGrey[800]!,
-            Colors.blueGrey[900]!,
-          ]
+                  Colors.blueGrey[800]!,
+                  Colors.blueGrey[900]!,
+                ]
               : [
-            Theme.of(context).colorScheme.primary,
-            Theme.of(context).colorScheme.primary.withOpacity(0.8),
-          ],
+                  Theme.of(context).colorScheme.primary,
+                  Theme.of(context).colorScheme.primary.withOpacity(0.8),
+                ],
         ),
         borderRadius: BorderRadius.circular(16),
         boxShadow: isDark
             ? [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.4),
-            blurRadius: 12,
-            offset: Offset(0, 6),
-          ),
-        ]
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.4),
+                  blurRadius: 12,
+                  offset: Offset(0, 6),
+                ),
+              ]
             : [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.15),
-            blurRadius: 8,
-            offset: Offset(0, 4),
-          ),
-        ],
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.15),
+                  blurRadius: 8,
+                  offset: Offset(0, 4),
+                ),
+              ],
       ),
       child: Column(
         children: [
@@ -378,25 +379,25 @@ class _HomeDashboardState extends State<HomeDashboard> {
         borderRadius: BorderRadius.circular(16),
         border: isDark
             ? Border.all(
-          color: Colors.grey[800]!,
-          width: 1,
-        )
+                color: Colors.grey[800]!,
+                width: 1,
+              )
             : null,
         boxShadow: isDark
             ? [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.3),
-            blurRadius: 8,
-            offset: Offset(0, 4),
-          ),
-        ]
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3),
+                  blurRadius: 8,
+                  offset: Offset(0, 4),
+                ),
+              ]
             : [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 6,
-            offset: Offset(0, 3),
-          ),
-        ],
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 6,
+                  offset: Offset(0, 3),
+                ),
+              ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -433,7 +434,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
           LinearProgressIndicator(
             value: progress,
             backgroundColor:
-            Theme.of(context).colorScheme.onSurface.withOpacity(0.1),
+                Theme.of(context).colorScheme.onSurface.withOpacity(0.1),
             valueColor: AlwaysStoppedAnimation<Color>(
               Theme.of(context).colorScheme.primary,
             ),
@@ -463,25 +464,25 @@ class _HomeDashboardState extends State<HomeDashboard> {
         borderRadius: BorderRadius.circular(16),
         border: isDark
             ? Border.all(
-          color: Colors.grey[800]!,
-          width: 1,
-        )
+                color: Colors.grey[800]!,
+                width: 1,
+              )
             : null,
         boxShadow: isDark
             ? [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.3),
-            blurRadius: 8,
-            offset: Offset(0, 4),
-          ),
-        ]
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3),
+                  blurRadius: 8,
+                  offset: Offset(0, 4),
+                ),
+              ]
             : [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 6,
-            offset: Offset(0, 3),
-          ),
-        ],
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 6,
+                  offset: Offset(0, 3),
+                ),
+              ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -587,7 +588,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
       backgroundColor: isDark ? Colors.grey[900] : Colors.white,
       selectedItemColor: Theme.of(context).colorScheme.primary,
       unselectedItemColor:
-      Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+          Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
       selectedLabelStyle: TextStyle(fontWeight: FontWeight.w600),
       elevation: isDark ? 8 : 4,
       items: const [

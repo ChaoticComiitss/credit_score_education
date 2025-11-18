@@ -56,7 +56,7 @@ class _ProfilePageState extends State<ProfilePage> {
         _nameController.text = _userData.name;
       } else {
         _userData = UserData(
-          name: 'New User',
+          name: '', // Empty name initially
           simulatedScore: 720,
           xpPoints: 0,
           completedLessons: [],
@@ -69,7 +69,7 @@ class _ProfilePageState extends State<ProfilePage> {
       }
     } catch (e) {
       _userData = UserData(
-        name: 'Demo User',
+        name: '', // Empty name initially
         simulatedScore: 720,
         xpPoints: 0,
         completedLessons: [],
@@ -98,7 +98,11 @@ class _ProfilePageState extends State<ProfilePage> {
   void _updateUserName() async {
     if (_nameController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Name cannot be empty')),
+        SnackBar(
+          content: Text('Name cannot be empty'),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
       );
       return;
     }
@@ -157,276 +161,452 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color primaryColor = Theme.of(context).colorScheme.primary;
+    final Color surfaceColor = Theme.of(context).colorScheme.surface;
+    final Color onSurfaceColor = Theme.of(context).colorScheme.onSurface;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Setting'),
+        title: Text(
+          'Profile',
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 20,
+            height: 1.0,
+          ),
+        ),
+        centerTitle: true,
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        foregroundColor: onSurfaceColor,
         actions: [
-          IconButton(
-            icon: Icon(widget.isDarkMode ? Icons.light_mode : Icons.dark_mode),
-            onPressed: widget.toggleTheme,
-            tooltip: 'Toggle Theme',
+          Container(
+            margin: EdgeInsets.only(right: 16),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: surfaceColor.withOpacity(0.5),
+            ),
+            child: IconButton(
+              icon: Icon(
+                widget.isDarkMode ? Icons.light_mode : Icons.dark_mode,
+                color: primaryColor,
+                size: 22,
+              ),
+              onPressed: widget.toggleTheme,
+              tooltip: 'Toggle Theme',
+              padding: EdgeInsets.all(8),
+            ),
           ),
         ],
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
+        ),
+      )
           : SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(20.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Profile Header
+            // 1. Stats Card - Fixed Pixel Alignment
             Container(
-              width: 120,
-              height: 120,
+              padding: EdgeInsets.all(24),
               decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Theme.of(context).primaryColor.withOpacity(0.1),
-                border: Border.all(
-                  color: Theme.of(context).primaryColor,
-                  width: 3,
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: isDark
+                      ? [
+                    Color(0xFF2D2B4E),
+                    Color(0xFF1E1E2C),
+                  ]
+                      : [
+                    Color(0xFF667EEA),
+                    Color(0xFF764BA2),
+                  ],
                 ),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: isDark
+                        ? Colors.black.withOpacity(0.4)
+                        : Colors.purple.withOpacity(0.3),
+                    blurRadius: 20,
+                    offset: Offset(0, 10),
+                  ),
+                ],
               ),
-              child: Icon(
-                Icons.person,
-                size: 60,
-                color: Theme.of(context).primaryColor,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  Expanded(
+                    child: _buildModernStatItem(
+                        'Score', _userData.simulatedScore.toString(), Icons.assessment),
+                  ),
+                  Expanded(
+                    child: _buildModernStatItem(
+                        'XP', _userData.xpPoints.toString(), Icons.star),
+                  ),
+                  Expanded(
+                    child: _buildModernStatItem('Lessons',
+                        _userData.completedLessons.length.toString(), Icons.menu_book),
+                  ),
+                ],
               ),
             ),
-            SizedBox(height: 20),
+            SizedBox(height: 24),
 
-            // User Name with Edit Option
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                if (_isEditingName)
-                  Expanded(
-                    child: TextField(
-                      controller: _nameController,
-                      focusNode: _nameFocusNode,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.onSurface,
-                      ),
-                      decoration: InputDecoration(
-                        hintText: 'Enter your name',
-                        hintStyle: TextStyle(
-                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-                        ),
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.zero,
-                      ),
-                      maxLength: 20,
-                      onSubmitted: (_) => _updateUserName(),
-                    ),
-                  )
-                else
-                  Text(
-                    _userData.name,
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
+            // 2. Name Card - Fixed Alignment
+            Container(
+              padding: EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: surfaceColor,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: isDark
+                        ? Colors.black.withOpacity(0.3)
+                        : Colors.grey.withOpacity(0.2),
+                    blurRadius: 15,
+                    offset: Offset(0, 5),
                   ),
-                SizedBox(width: 8),
-                if (!_isEditingName)
-                  IconButton(
-                    icon: Icon(Icons.edit, size: 20, color: Theme.of(context).colorScheme.onSurface),
-                    onPressed: _startEditingName,
-                    tooltip: 'Edit Name',
-                  )
-                else
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                   Row(
-                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      IconButton(
-                        icon: Icon(Icons.check, color: Colors.green, size: 20),
-                        onPressed: _updateUserName,
-                        tooltip: 'Save',
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.close, color: Colors.red, size: 20),
-                        onPressed: _cancelEditingName,
-                        tooltip: 'Cancel',
+                      Icon(Icons.person_outline, color: primaryColor, size: 20),
+                      SizedBox(width: 8),
+                      Text(
+                        'Your Name',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: onSurfaceColor,
+                          height: 1.0,
+                        ),
                       ),
                     ],
                   ),
-              ],
-            ),
-            SizedBox(height: 8),
-
-            // User Email/Status
-            Text(
-              'Credit Score: ${_userData.simulatedScore}',
-              style: TextStyle(
-                fontSize: 16,
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-              ),
-            ),
-            SizedBox(height: 30),
-
-            // Stats Card
-            Card(
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _buildStatItem('Score', _userData.simulatedScore.toString(), Icons.assessment),
-                    _buildStatItem('XP', _userData.xpPoints.toString(), Icons.star),
-                    _buildStatItem('Lessons', _userData.completedLessons.length.toString(), Icons.menu_book),
-                  ],
-                ),
-              ),
-            ),
-            SizedBox(height: 10),
-
-            // Currency Selector Card
-            Card(
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Preferred Currency',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.onSurface,
-                      ),
-                    ),
-                    SizedBox(height: 12),
-                    DropdownButtonFormField<String>(
-                      value: widget.selectedCurrency,
-                      onChanged: (String? newValue) {
-                        if (newValue != null) {
-                          _updateCurrency(newValue);
-                        }
-                      },
-                      items: _currencies.keys.map((String currency) {
-                        return DropdownMenuItem<String>(
-                          value: currency,
-                          child: Row(
-                            children: [
-                              Text(
-                                _currencies[currency]!['symbol'],
-                                style: TextStyle(
-                                  color: Theme.of(context).colorScheme.onSurface,
-                                ),
-                              ),
-                              SizedBox(width: 8),
-                              Text(
-                                '${_currencies[currency]!['name']} ($currency)',
-                                style: TextStyle(
-                                  color: Theme.of(context).colorScheme.onSurface,
-                                ),
-                              ),
-                            ],
+                  SizedBox(height: 16),
+                  if (_isEditingName)
+                    Column(
+                      children: [
+                        TextField(
+                          controller: _nameController,
+                          focusNode: _nameFocusNode,
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: onSurfaceColor,
+                            fontWeight: FontWeight.w500,
+                            height: 1.0,
                           ),
-                        );
-                      }).toList(),
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: 'Select Currency',
-                        labelStyle: TextStyle(
-                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                          decoration: InputDecoration(
+                            hintText: 'Enter your name',
+                            hintStyle: TextStyle(
+                              color: onSurfaceColor.withOpacity(0.5),
+                              height: 1.0,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
+                            filled: true,
+                            fillColor: isDark
+                                ? Colors.grey[800]!.withOpacity(0.3)
+                                : Colors.grey[100]!,
+                            contentPadding:
+                            EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          ),
+                          maxLength: 20,
+                          onSubmitted: (_) => _updateUserName(),
+                        ),
+                        SizedBox(height: 12),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            OutlinedButton(
+                              onPressed: _cancelEditingName,
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: onSurfaceColor.withOpacity(0.7),
+                                side: BorderSide(color: onSurfaceColor.withOpacity(0.3)),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                              ),
+                              child: Text(
+                                'Cancel',
+                                style: TextStyle(height: 1.0),
+                              ),
+                            ),
+                            SizedBox(width: 12),
+                            ElevatedButton(
+                              onPressed: _updateUserName,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: primaryColor,
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+                                elevation: 2,
+                              ),
+                              child: Text(
+                                'Save',
+                                style: TextStyle(height: 1.0),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    )
+                  else
+                    Row(
+                      children: [
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: _startEditingName,
+                            child: Container(
+                              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                              decoration: BoxDecoration(
+                                color: isDark
+                                    ? Colors.grey[800]!.withOpacity(0.3)
+                                    : Colors.grey[100]!,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: onSurfaceColor.withOpacity(0.1),
+                                ),
+                              ),
+                              child: Text(
+                                _userData.name.isEmpty ? 'Enter your name' : _userData.name,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: _userData.name.isEmpty
+                                      ? onSurfaceColor.withOpacity(0.5)
+                                      : onSurfaceColor,
+                                  fontWeight: _userData.name.isEmpty
+                                      ? FontWeight.w400
+                                      : FontWeight.w500,
+                                  height: 1.0,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 12),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: primaryColor.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: IconButton(
+                            icon: Icon(Icons.edit, size: 18, color: primaryColor),
+                            onPressed: _startEditingName,
+                            tooltip: 'Edit Name',
+                            padding: EdgeInsets.all(10),
+                          ),
+                        ),
+                      ],
+                    ),
+                ],
+              ),
+            ),
+            SizedBox(height: 20),
+
+            // 3. Currency Selector Card - Fixed Dropdown
+            Container(
+              padding: EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: surfaceColor,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: isDark
+                        ? Colors.black.withOpacity(0.3)
+                        : Colors.grey.withOpacity(0.2),
+                    blurRadius: 15,
+                    offset: Offset(0, 5),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.currency_exchange_outlined, color: primaryColor, size: 20),
+                      SizedBox(width: 8),
+                      Text(
+                        'Select Currency',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: onSurfaceColor,
+                          height: 1.0,
                         ),
                       ),
-                      dropdownColor: Theme.of(context).cardColor,
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.onSurface,
+                    ],
+                  ),
+                  SizedBox(height: 16),
+
+                  // Fixed Dropdown - Pixel Perfect
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      color: isDark
+                          ? Colors.grey[800]!.withOpacity(0.3)
+                          : Colors.grey[100]!,
+                    ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        value: widget.selectedCurrency,
+                        onChanged: (String? newValue) {
+                          if (newValue != null) {
+                            _updateCurrency(newValue);
+                          }
+                        },
+                        items: _currencies.keys.map((String currency) {
+                          return DropdownMenuItem<String>(
+                            value: currency,
+                            child: Container(
+                              padding: EdgeInsets.symmetric(vertical: 8),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 30,
+                                    height: 30,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: primaryColor.withOpacity(0.1),
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        _currencies[currency]!['symbol'],
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                          color: primaryColor,
+                                          height: 1.0,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(width: 12),
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        _currencies[currency]!['name'],
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w500,
+                                          color: onSurfaceColor,
+                                          height: 1.0,
+                                        ),
+                                      ),
+                                      Text(
+                                        currency,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: onSurfaceColor.withOpacity(0.6),
+                                          height: 1.0,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                        isExpanded: true,
+                        icon: Icon(Icons.arrow_drop_down, color: primaryColor),
+                        dropdownColor: isDark ? Color(0xFF2D2D2D) : Colors.white,
+                        style: TextStyle(
+                          color: onSurfaceColor,
+                          fontSize: 14,
+                          height: 1.0,
+                        ),
                       ),
                     ),
-                    SizedBox(height: 8),
-                    Text(
-                      'Current: ${_getCurrencySymbol()} (1 USD = ${_getCurrencySymbol()}${_currencies[widget.selectedCurrency]!['rate']!.toStringAsFixed(2)})',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                      ),
+                  ),
+
+                  SizedBox(height: 12),
+                  Container(
+                    padding: EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: primaryColor.withOpacity(0.05),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: primaryColor.withOpacity(0.1)),
                     ),
-                  ],
-                ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.info_outline, size: 16, color: primaryColor),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            '1 USD = ${_getCurrencySymbol()}${_currencies[widget.selectedCurrency]!['rate']!.toStringAsFixed(2)}',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: onSurfaceColor.withOpacity(0.7),
+                              height: 1.0,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
             SizedBox(height: 20),
 
-            // Progress Card
-            Card(
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+            // 4. Learning Progress Card - Fixed Alignment
+            Container(
+              padding: EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: surfaceColor,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: isDark
+                        ? Colors.black.withOpacity(0.3)
+                        : Colors.grey.withOpacity(0.2),
+                    blurRadius: 15,
+                    offset: Offset(0, 5),
+                  ),
+                ],
               ),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Learning Progress',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.onSurface,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.timeline_outlined, color: primaryColor, size: 20),
+                      SizedBox(width: 8),
+                      Text(
+                        'Learning Progress',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: onSurfaceColor,
+                          height: 1.0,
+                        ),
                       ),
-                    ),
-                    SizedBox(height: 16),
-                    _buildInfoRow('Completed Lessons', '${_userData.completedLessons.length}'),
-                    _buildInfoRow('Quizzes Taken', '${_userData.quizScores.length}'),
-                    _buildInfoRow('Badges Earned', '${_userData.earnedBadges.length}'),
-                    _buildInfoRow('Total XP', '${_userData.xpPoints}'),
-                  ],
-                ),
-              ),
-            ),
-            SizedBox(height: 20),
-
-            // Theme Toggle Card
-            Card(
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Row(
-                  children: [
-                    Icon(
-                      widget.isDarkMode ? Icons.dark_mode : Icons.light_mode,
-                      color: Theme.of(context).primaryColor,
-                    ),
-                    SizedBox(width: 12),
-                    Text(
-                      'Dark Mode',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                        color: Theme.of(context).colorScheme.onSurface,
-                      ),
-                    ),
-                    Spacer(),
-                    Switch(
-                      value: widget.isDarkMode,
-                      onChanged: (value) {
-                        widget.toggleTheme();
-                      },
-                      activeColor: Theme.of(context).primaryColor,
-                    ),
-                  ],
-                ),
+                    ],
+                  ),
+                  SizedBox(height: 16),
+                  _buildModernInfoRow('Completed Lessons', '${_userData.completedLessons.length}'),
+                  _buildModernInfoRow('Quizzes Taken', '${_userData.quizScores.length}'),
+                  _buildModernInfoRow('Badges Earned', '${_userData.earnedBadges.length}'),
+                  _buildModernInfoRow('Total XP', '${_userData.xpPoints}'),
+                ],
               ),
             ),
             SizedBox(height: 20),
@@ -436,54 +616,79 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _buildStatItem(String label, String value, IconData icon) {
+  Widget _buildModernStatItem(String label, String value, IconData icon) {
     return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Container(
-          padding: EdgeInsets.all(8),
+          padding: EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Theme.of(context).primaryColor.withOpacity(0.2),
+            color: Colors.white.withOpacity(0.2),
             shape: BoxShape.circle,
           ),
-          child: Icon(icon, color: Theme.of(context).primaryColor),
+          child: Icon(icon, color: Colors.white, size: 20),
         ),
         SizedBox(height: 8),
         Text(
           value,
           style: TextStyle(
-            fontSize: 18,
+            fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: Theme.of(context).colorScheme.onSurface,
+            color: Colors.white,
+            height: 1.0,
           ),
+          textAlign: TextAlign.center,
         ),
         Text(
           label,
           style: TextStyle(
             fontSize: 12,
-            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+            color: Colors.white.withOpacity(0.8),
+            fontWeight: FontWeight.w500,
+            height: 1.0,
           ),
+          textAlign: TextAlign.center,
         ),
       ],
     );
   }
 
-  Widget _buildInfoRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+  Widget _buildModernInfoRow(String label, String value) {
+    final Color onSurfaceColor = Theme.of(context).colorScheme.onSurface;
+
+    return Container(
+      margin: EdgeInsets.only(bottom: 12),
+      padding: EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(10),
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             label,
             style: TextStyle(
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+              color: onSurfaceColor.withOpacity(0.8),
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              height: 1.0,
             ),
           ),
-          Text(
-            value,
-            style: TextStyle(
-              fontWeight: FontWeight.w500,
-              color: Theme.of(context).colorScheme.onSurface,
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              value,
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: Theme.of(context).colorScheme.primary,
+                fontSize: 14,
+                height: 1.0,
+              ),
             ),
           ),
         ],
