@@ -386,13 +386,23 @@ Regular credit monitoring helps protect your financial health and catch problems
   @override
   Widget build(BuildContext context) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).colorScheme.primary;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Learning Modules'),
+        title: Text(
+          'Learning Modules',
+          style: TextStyle(
+            fontWeight: FontWeight.w700,
+            fontSize: 20,
+          ),
+        ),
+        backgroundColor: isDark ? Colors.transparent : Colors.white,
+        elevation: 0,
+        foregroundColor: Theme.of(context).colorScheme.onBackground,
         actions: [
           IconButton(
-            icon: Icon(Icons.info_outline),
+            icon: Icon(Icons.info_outline_rounded),
             onPressed: _showProgressInfo,
             tooltip: 'Progress Info',
           ),
@@ -402,20 +412,33 @@ Regular credit monitoring helps protect your financial health and catch problems
         children: [
           // Progress Header
           Container(
-            padding: EdgeInsets.all(16),
+            padding: EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-              border: Border(
-                bottom: BorderSide(
-                  color: Theme.of(context).dividerColor,
-                  width: 1,
-                ),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: isDark
+                    ? [
+                  primaryColor.withOpacity(0.2),
+                  primaryColor.withOpacity(0.1),
+                ]
+                    : [
+                  primaryColor.withOpacity(0.1),
+                  primaryColor.withOpacity(0.05),
+                ],
               ),
             ),
             child: Row(
               children: [
-                Icon(Icons.school, color: Theme.of(context).colorScheme.primary),
-                SizedBox(width: 12),
+                Container(
+                  padding: EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: primaryColor.withOpacity(0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.school_rounded, color: primaryColor, size: 24),
+                ),
+                SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -423,41 +446,67 @@ Regular credit monitoring helps protect your financial health and catch problems
                       Text(
                         'Learning Progress',
                         style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 18,
+                          color: Theme.of(context).colorScheme.onBackground,
                         ),
                       ),
-                      SizedBox(height: 4),
+                      SizedBox(height: 6),
                       Text(
                         '${widget.completedLessons.length}/${_lessons.length} lessons completed',
                         style: TextStyle(
-                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                          color: Theme.of(context).colorScheme.onBackground.withOpacity(0.7),
+                          fontSize: 14,
+                        ),
+                      ),
+                      SizedBox(height: 12),
+                      // Progress Bar
+                      Container(
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.surface.withOpacity(0.5),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: FractionallySizedBox(
+                          alignment: Alignment.centerLeft,
+                          widthFactor: widget.completedLessons.length / _lessons.length,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [primaryColor, primaryColor.withOpacity(0.7)],
+                              ),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
                 Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary,
+                    gradient: LinearGradient(
+                      colors: [primaryColor, primaryColor.withOpacity(0.8)],
+                    ),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
                     '${((widget.completedLessons.length / _lessons.length) * 100).toInt()}%',
                     style: TextStyle(
                       color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 16,
                     ),
                   ),
                 ),
               ],
             ),
           ),
+          SizedBox(height: 8),
           Expanded(
             child: ListView.builder(
-              padding: EdgeInsets.all(16),
+              padding: EdgeInsets.all(20),
               itemCount: _lessons.length,
               itemBuilder: (context, index) {
                 final lesson = _lessons[index];
@@ -477,7 +526,6 @@ Regular credit monitoring helps protect your financial health and catch problems
                       _showLockedMessage(context);
                     }
                   },
-                  isDarkMode: isDark,
                 );
               },
             ),
@@ -507,26 +555,40 @@ Regular credit monitoring helps protect your financial health and catch problems
             if (!isCompleted && widget.onLessonComplete != null) {
               widget.onLessonComplete!(lesson.id);
             }
-            Navigator.pop(context);
-            setState(() {});
           },
         ),
       ),
-    );
+    ).then((_){
+      if(mounted){
+        setState(() {
+
+        });
+      }
+    });
   }
 
   void _showLockedMessage(BuildContext context) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Lesson Locked 🔒'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            Icon(Icons.lock_rounded, color: Colors.orange),
+            SizedBox(width: 8),
+            Text('Lesson Locked 🔒'),
+          ],
+        ),
         content: Text('Complete previous lessons to unlock this one. Focus on mastering each concept before moving forward.'),
         actions: [
           TextButton(
             onPressed: () {
               Navigator.pop(context);
             },
-            child: Text('Got It'),
+            child: Text(
+              'Got It',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
           ),
         ],
       ),
@@ -537,18 +599,19 @@ Regular credit monitoring helps protect your financial health and catch problems
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text('Learning Path Info'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('• Complete lessons in order for best learning'),
+            _buildInfoItem('• Complete lessons in order for best learning'),
             SizedBox(height: 8),
-            Text('• Each lesson increases your credit score by 5 points'),
+            _buildInfoItem('• Each lesson increases your credit score by 5 points'),
             SizedBox(height: 8),
-            Text('• Master each concept before moving forward'),
+            _buildInfoItem('• Master each concept before moving forward'),
             SizedBox(height: 8),
-            Text('• Revisit completed lessons anytime for review'),
+            _buildInfoItem('• Revisit completed lessons anytime for review'),
           ],
         ),
         actions: [
@@ -556,10 +619,24 @@ Regular credit monitoring helps protect your financial health and catch problems
             onPressed: () {
               Navigator.pop(context);
             },
-            child: Text('Got It'),
+            child: Text(
+              'Got It',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildInfoItem(String text) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(Icons.circle, size: 6, color: Theme.of(context).colorScheme.primary),
+        SizedBox(width: 8),
+        Expanded(child: Text(text)),
+      ],
     );
   }
 }
@@ -590,7 +667,6 @@ class LessonCard extends StatelessWidget {
   final bool isNextLesson;
   final bool isLocked;
   final VoidCallback onTap;
-  final bool isDarkMode;
 
   const LessonCard({
     Key? key,
@@ -599,128 +675,214 @@ class LessonCard extends StatelessWidget {
     required this.isNextLesson,
     required this.isLocked,
     required this.onTap,
-    required this.isDarkMode,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final cardColor = isDarkMode ? Colors.grey[800]! : Colors.white;
-    final textColor = isDarkMode ? Colors.white : Colors.black;
-    final subtitleColor = isDarkMode ? Colors.grey[400]! : Colors.grey[600]!;
-    final lockedColor = isDarkMode ? Colors.grey[600]! : Colors.grey;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).colorScheme.primary;
 
-    return Card(
+    return Container(
       margin: EdgeInsets.only(bottom: 16),
-      elevation: 4,
-      shadowColor: isDarkMode ? Colors.black.withOpacity(0.4) : Colors.black.withOpacity(0.1),
-      color: cardColor,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: isDarkMode
-            ? BorderSide(color: Colors.grey[700]!, width: 1)
-            : BorderSide.none,
-      ),
-      child: ListTile(
-        leading: Container(
-          width: 50,
-          height: 50,
-          decoration: BoxDecoration(
-            color: isCompleted
-                ? Colors.green.withOpacity(isDarkMode ? 0.3 : 0.2)
-                : isNextLesson
-                ? Colors.blue.withOpacity(isDarkMode ? 0.3 : 0.2)
-                : (isDarkMode ? Colors.grey[700]! : Colors.grey).withOpacity(0.2),
-            borderRadius: BorderRadius.circular(25),
-            border: Border.all(
-              color: isCompleted
-                  ? Colors.green
-                  : isNextLesson
-                  ? Colors.blue
-                  : (isDarkMode ? Colors.grey[600]! : Colors.grey),
-              width: 2,
+      child: Material(
+        color: isDark ? Colors.grey[800] : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        elevation: isDark ? 0 : 4,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(20),
+          child: Container(
+            padding: EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              border: isDark
+                  ? Border.all(color: Colors.grey[700]!)
+                  : Border.all(color: Colors.grey[100]!),
             ),
-          ),
-          child: Icon(
-            lesson.icon,
-            color: isCompleted
-                ? Colors.green
-                : isNextLesson
-                ? Colors.blue
-                : (isDarkMode ? Colors.grey[400]! : Colors.grey),
-          ),
-        ),
-        title: Text(
-          lesson.title,
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: isLocked ? lockedColor : textColor,
-          ),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              lesson.description,
-              style: TextStyle(
-                color: isLocked ? lockedColor : subtitleColor,
-              ),
-            ),
-            SizedBox(height: 4),
-            Row(
+            child: Row(
               children: [
-                Icon(Icons.schedule, size: 12, color: isLocked ? lockedColor : subtitleColor),
-                SizedBox(width: 4),
-                Text(
-                  lesson.duration,
-                  style: TextStyle(
-                    color: isLocked ? lockedColor : subtitleColor,
-                    fontSize: 12,
+                // Icon Container
+                Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    gradient: _getIconGradient(),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: _getIconColor().withOpacity(0.3),
+                        blurRadius: 8,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    lesson.icon,
+                    color: Colors.white,
+                    size: 28,
                   ),
                 ),
-                if (isCompleted) ...[
-                  SizedBox(width: 12),
-                  Icon(Icons.check_circle, size: 12, color: Colors.green),
-                  SizedBox(width: 4),
-                  Text(
-                    'Completed',
-                    style: TextStyle(
-                      color: Colors.green,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                    ),
+                SizedBox(width: 16),
+
+                // Content
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        lesson.title,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 16,
+                          color: isLocked
+                              ? Theme.of(context).colorScheme.onBackground.withOpacity(0.4)
+                              : Theme.of(context).colorScheme.onBackground,
+                        ),
+                      ),
+                      SizedBox(height: 6),
+                      Text(
+                        lesson.description,
+                        style: TextStyle(
+                          color: isLocked
+                              ? Theme.of(context).colorScheme.onBackground.withOpacity(0.3)
+                              : Theme.of(context).colorScheme.onBackground.withOpacity(0.7),
+                          fontSize: 13,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Container(
+                            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: _getStatusColor(context).withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: _getStatusColor(context).withOpacity(0.3)),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.schedule_rounded,
+                                  size: 12,
+                                  color: _getStatusColor(context),
+                                ),
+                                SizedBox(width: 4),
+                                Text(
+                                  lesson.duration,
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: _getStatusColor(context),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (isCompleted) ...[
+                            SizedBox(width: 8),
+                            Container(
+                              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.green.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: Colors.green.withOpacity(0.3)),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.check_rounded, size: 12, color: Colors.green),
+                                  SizedBox(width: 4),
+                                  Text(
+                                    'Completed',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.green,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ],
                   ),
-                ],
+                ),
+                SizedBox(width: 12),
+
+                // Action Button
+                _buildTrailingButton(),
               ],
             ),
-          ],
+          ),
         ),
-        trailing: _buildTrailingIcon(),
-        onTap: onTap,
-        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       ),
     );
   }
 
-  Widget _buildTrailingIcon() {
+  LinearGradient _getIconGradient() {
+    if (isCompleted) {
+      return LinearGradient(
+        colors: [Colors.green, Colors.green.shade400],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      );
+    } else if (isNextLesson) {
+      return LinearGradient(
+        colors: [Colors.blue, Colors.blue.shade400],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      );
+    } else if (isLocked) {
+      return LinearGradient(
+        colors: [Colors.grey, Colors.grey.shade400],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      );
+    } else {
+      return LinearGradient(
+        colors: [Colors.orange, Colors.orange.shade400],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      );
+    }
+  }
+
+  Color _getIconColor() {
+    if (isCompleted) return Colors.green;
+    if (isNextLesson) return Colors.blue;
+    if (isLocked) return Colors.grey;
+    return Colors.orange;
+  }
+
+  Color _getStatusColor(BuildContext context) {
+    if (isLocked) return Colors.grey;
+    return Theme.of(context).colorScheme.primary;
+  }
+
+  Widget _buildTrailingButton() {
     if (isCompleted) {
       return Container(
-        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: Colors.green.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.green, width: 1),
+          gradient: LinearGradient(
+            colors: [Colors.green, Colors.green.shade600],
+          ),
+          borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.check, color: Colors.green, size: 16),
+            Icon(Icons.check_rounded, color: Colors.white, size: 16),
             SizedBox(width: 4),
             Text(
               'Done',
               style: TextStyle(
-                color: Colors.green,
+                color: Colors.white,
                 fontSize: 12,
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ],
@@ -728,29 +890,31 @@ class LessonCard extends StatelessWidget {
       );
     } else if (isNextLesson) {
       return Container(
-        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         decoration: BoxDecoration(
-          color: Colors.blue,
-          borderRadius: BorderRadius.circular(20),
+          gradient: LinearGradient(
+            colors: [Colors.blue, Colors.blue.shade600],
+          ),
+          borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
               color: Colors.blue.withOpacity(0.3),
-              blurRadius: 4,
-              offset: Offset(0, 2),
+              blurRadius: 8,
+              offset: Offset(0, 4),
             ),
           ],
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.play_arrow, color: Colors.white, size: 16),
-            SizedBox(width: 4),
+            Icon(Icons.play_arrow_rounded, color: Colors.white, size: 18),
+            SizedBox(width: 6),
             Text(
               'Start',
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 14,
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ],
@@ -758,14 +922,14 @@ class LessonCard extends StatelessWidget {
       );
     } else {
       return Container(
-        padding: EdgeInsets.all(8),
+        padding: EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: isDarkMode ? Colors.grey[700]! : Colors.grey[200]!,
+          color: Colors.grey.withOpacity(0.1),
           shape: BoxShape.circle,
         ),
         child: Icon(
-          Icons.lock,
-          color: isDarkMode ? Colors.grey[400]! : Colors.grey[600]!,
+          Icons.lock_rounded,
+          color: Colors.grey,
           size: 20,
         ),
       );
@@ -773,7 +937,6 @@ class LessonCard extends StatelessWidget {
   }
 }
 
-// New Lesson Detail Page
 class LessonDetailPage extends StatelessWidget {
   final Lesson lesson;
   final bool isCompleted;
@@ -788,44 +951,75 @@ class LessonDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final primaryColor = Theme.of(context).colorScheme.primary;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(lesson.title),
+        title: Text(
+          lesson.title,
+          style: TextStyle(fontWeight: FontWeight.w700),
+        ),
+        backgroundColor: isDark ? Colors.transparent : Colors.white,
+        elevation: 0,
+        foregroundColor: Theme.of(context).colorScheme.onBackground,
         actions: [
           if (!isCompleted)
-            IconButton(
-              icon: Icon(Icons.check_circle_outline),
-              onPressed: () {
-                _showCompletionDialog(context);
-              },
-              tooltip: 'Mark as Complete',
+            Container(
+              margin: EdgeInsets.only(right: 16),
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  _showCompletionDialog(context);
+                },
+                icon: Icon(Icons.check_circle_rounded, size: 18),
+                label: Text('Complete'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: primaryColor,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  elevation: 2,
+                ),
+              ),
             ),
         ],
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
+        padding: EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Lesson Header
             Container(
-              padding: EdgeInsets.all(16),
+              padding: EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    primaryColor.withOpacity(0.1),
+                    primaryColor.withOpacity(0.05),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(20),
               ),
               child: Row(
                 children: [
                   Container(
-                    width: 60,
-                    height: 60,
+                    width: 70,
+                    height: 70,
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+                      gradient: LinearGradient(
+                        colors: [primaryColor, primaryColor.withOpacity(0.7)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(lesson.icon, color: Theme.of(context).colorScheme.primary, size: 30),
+                    child: Icon(lesson.icon, color: Colors.white, size: 32),
                   ),
-                  SizedBox(width: 16),
+                  SizedBox(width: 20),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -833,35 +1027,70 @@ class LessonDetailPage extends StatelessWidget {
                         Text(
                           lesson.title,
                           style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
+                            fontSize: 22,
+                            fontWeight: FontWeight.w700,
+                            color: Theme.of(context).colorScheme.onBackground,
                           ),
                         ),
-                        SizedBox(height: 4),
+                        SizedBox(height: 6),
                         Text(
                           lesson.description,
                           style: TextStyle(
-                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                            color: Theme.of(context).colorScheme.onBackground.withOpacity(0.7),
+                            fontSize: 14,
                           ),
                         ),
-                        SizedBox(height: 8),
-                        Row(
+                        SizedBox(height: 12),
+                        // Fixed Row with Wrap to prevent overflow
+                        Wrap(
+                          spacing: 12,
+                          runSpacing: 8,
                           children: [
-                            Icon(Icons.schedule, size: 16, color: Colors.grey),
-                            SizedBox(width: 4),
-                            Text(
-                              lesson.duration,
-                              style: TextStyle(color: Colors.grey),
-                            ),
-                            if (isCompleted) ...[
-                              SizedBox(width: 16),
-                              Icon(Icons.check_circle, size: 16, color: Colors.green),
-                              SizedBox(width: 4),
-                              Text(
-                                'Completed',
-                                style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
+                            Container(
+                              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: primaryColor.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(12),
                               ),
-                            ],
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.schedule_rounded, size: 14, color: primaryColor),
+                                  SizedBox(width: 6),
+                                  Text(
+                                    lesson.duration,
+                                    style: TextStyle(
+                                      color: primaryColor,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            if (isCompleted)
+                              Container(
+                                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: Colors.green.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.check_rounded, size: 14, color: Colors.green),
+                                    SizedBox(width: 6),
+                                    Text(
+                                      'Completed',
+                                      style: TextStyle(
+                                        color: Colors.green,
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                           ],
                         ),
                       ],
@@ -870,56 +1099,81 @@ class LessonDetailPage extends StatelessWidget {
                 ],
               ),
             ),
-            SizedBox(height: 24),
+            SizedBox(height: 32),
 
             // Key Points
             Text(
-              'Key Takeaways:',
+              'Key Takeaways',
               style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: Theme.of(context).colorScheme.onBackground,
               ),
             ),
-            SizedBox(height: 12),
-            ...lesson.keyPoints.map((point) => Padding(
-              padding: EdgeInsets.symmetric(vertical: 4),
+            SizedBox(height: 16),
+            ...lesson.keyPoints.map((point) => Container(
+              margin: EdgeInsets.only(bottom: 12),
+              padding: EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: Theme.of(context).dividerColor.withOpacity(0.3),
+                ),
+              ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.check_circle, color: Colors.green, size: 16),
-                  SizedBox(width: 8),
+                  Container(
+                    width: 24,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      color: Colors.green.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(Icons.check_rounded, size: 14, color: Colors.green),
+                  ),
+                  SizedBox(width: 12),
                   Expanded(
                     child: Text(
                       point,
-                      style: TextStyle(fontSize: 14),
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Theme.of(context).colorScheme.onBackground,
+                        height: 1.4,
+                      ),
                     ),
                   ),
                 ],
               ),
             )),
-            SizedBox(height: 24),
+            SizedBox(height: 32),
 
             // Detailed Content
             Text(
-              'Detailed Explanation:',
+              'Detailed Explanation',
               style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: Theme.of(context).colorScheme.onBackground,
               ),
             ),
-            SizedBox(height: 12),
+            SizedBox(height: 16),
             Container(
-              padding: EdgeInsets.all(16),
+              padding: EdgeInsets.all(20),
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surface,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Theme.of(context).dividerColor),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: Theme.of(context).dividerColor.withOpacity(0.3),
+                ),
               ),
               child: Text(
                 lesson.detailedDescription,
                 style: TextStyle(
-                  fontSize: 14,
-                  height: 1.5,
+                  fontSize: 15,
+                  height: 1.6,
+                  color: Theme.of(context).colorScheme.onBackground.withOpacity(0.9),
                 ),
               ),
             ),
@@ -929,28 +1183,36 @@ class LessonDetailPage extends StatelessWidget {
             if (!isCompleted)
               SizedBox(
                 width: double.infinity,
+                height: 56,
                 child: ElevatedButton(
                   onPressed: () {
                     _showCompletionDialog(context);
                   },
                   style: ElevatedButton.styleFrom(
-                    padding: EdgeInsets.symmetric(vertical: 16),
-                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    backgroundColor: primaryColor,
                     foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    elevation: 2,
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.check_circle),
-                      SizedBox(width: 8),
+                      Icon(Icons.check_circle_rounded),
+                      SizedBox(width: 12),
                       Text(
                         'Mark as Complete',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ],
                   ),
                 ),
               ),
+            SizedBox(height: 16),
           ],
         ),
       ),
@@ -960,38 +1222,105 @@ class LessonDetailPage extends StatelessWidget {
   void _showCompletionDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Lesson Completed! 🎉'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Congratulations! You have completed "${lesson.title}".'),
-            SizedBox(height: 12),
-            Text('📈 +5 points to your credit score!'),
-            SizedBox(height: 16),
-            Container(
-              padding: EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.green.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                'Remember: ${lesson.keyPoints.first}',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        child: Container(
+          padding: EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(24),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.green.shade50,
+                Colors.green.shade100,
+              ],
             ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              onComplete();
-            },
-            child: Text('Continue Learning'),
           ),
-        ],
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  color: Colors.green,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.check_rounded, color: Colors.white, size: 40),
+              ),
+              SizedBox(height: 20),
+              Text(
+                'Lesson Completed! 🎉',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.green.shade800,
+                ),
+              ),
+              SizedBox(height: 12),
+              Text(
+                'Congratulations! You have completed "${lesson.title}".',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.green.shade700,
+                  height: 1.4,
+                ),
+              ),
+              SizedBox(height: 16),
+              Container(
+                padding: EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.green.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.green.withOpacity(0.3)),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.trending_up_rounded, color: Colors.green),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        '+5 points to your credit score!',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: Colors.green.shade700,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context); // Close the dialog
+                    onComplete(); // Call the completion callback
+                    Navigator.pop(context); // Navigate back to lessons list
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    'Continue Learning',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

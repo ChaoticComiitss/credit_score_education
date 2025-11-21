@@ -113,7 +113,6 @@ class ToolItem {
   });
 }
 
-// In the ToolCard widget, update the Card to have better dark mode visibility:
 class ToolCard extends StatelessWidget {
   final ToolItem tool;
 
@@ -184,6 +183,7 @@ class ToolCard extends StatelessWidget {
     );
   }
 }
+
 // Utilization Calculator Page
 class UtilizationCalculatorPage extends StatefulWidget {
   final String selectedCurrency;
@@ -317,7 +317,7 @@ class _UtilizationCalculatorPageState extends State<UtilizationCalculatorPage> {
                       onPressed: _calculateUtilization,
                       child: Text('Calculate Utilization'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
+                        backgroundColor: Colors.blue,
                         foregroundColor: Colors.white,
                         minimumSize: Size(double.infinity, 50),
                       ),
@@ -594,7 +594,7 @@ class _PaymentPlannerPageState extends State<PaymentPlannerPage> {
                     onPressed: _calculatePaymentPlan,
                     child: Text('Calculate Payment Plan'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.purple,
+                      backgroundColor: Colors.blue,
                       foregroundColor: Colors.white,
                       minimumSize: Size(double.infinity, 50),
                     ),
